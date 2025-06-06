@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Корпоратив — подбрось монетку</title>
+<style>
+  body {
+    margin: 0; padding: 0;
+    background: #333; /* темно-серый фон */
+    color: #ffdb4d; /* желтый */
+    font-family: Arial, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  h1 {
+    margin-bottom: 20px;
+  }
+  #coin-container {
+    perspective: 1000px;
+  }
+  #coin {
+    width: 180px;
+    height: 180px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .flip {
+    animation: coinFlip 4s forwards;
+  }
+  @keyframes coinFlip {
+    0%   { transform: translateY(0) rotateY(0deg); }
+    20%  { transform: translateY(-250px) rotateY(720deg); }
+    80%  { transform: translateY(-250px) rotateY(2160deg); }
+    100% { transform: translateY(0) rotateY(2880deg); }
+  }
+  #message {
+    margin-top: 30px;
+    font-size: 1.5em;
+    min-height: 40px;
+  }
+  #date-counter {
+    margin-top: 30px;
+    background: #444;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 1.3em;
+    cursor: pointer;
+    user-select: none;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>Подбрось монетку для корпоратива</h1>
+
+<div id="coin-container">
+  <img id="coin" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Stanley_Theatre%2C_Gold_Diggers_of_1933_Coin_Side_A.webp/640px-Stanley_Theatre%2C_Gold_Diggers_of_1933_Coin_Side_A.webp.png" alt="Монетка" />
+</div>
+
+<div id="message"></div>
+<div id="date-counter" title="Нажми, чтобы выбрать дату"></div>
+
+<!-- Звук -->
+<audio id="coin-sound" src="https://actions.google.com/sounds/v1/money/coin_drop.ogg"></audio>
+<audio id="firework-sound" src="https://actions.google.com/sounds/v1/fireworks/firework_boom.ogg"></audio>
+
+<!-- Простая анимация салюта из confetti.js -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<script>
+  const coin = document.getElementById('coin');
+  const message = document.getElementById('message');
+  const dateCounter = document.getElementById('date-counter');
+  const coinSound = document.getElementById('coin-sound');
+  const fireworkSound = document.getElementById('firework-sound');
+
+  let result = null;
+
+  const weekdays = [
+    "Четверг, 3 июля 2025",
+    "Пятница, 11 июля 2025",
+    "Четверг, 17 июля 2025",
+    "Пятница, 25 июля 2025",
+    "Четверг, 31 июля 2025",
+    "Пятница, 8 августа 2025",
+    "Четверг, 14 августа 2025",
+    "Пятница, 22 августа 2025",
+    "Четверг, 28 августа 2025"
+  ];
+
+  const weekends = [
+    "Суббота, 5 июля 2025",
+    "Суббота, 12 июля 2025",
+    "Суббота, 19 июля 2025",
+    "Суббота, 26 июля 2025",
+    "Суббота, 2 августа 2025",
+    "Суббота, 9 августа 2025",
+    "Суббота, 16 августа 2025",
+    "Суббота, 23 августа 2025",
+    "Суббота, 30 августа 2025"
+  ];
+
+  function getRandomFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function playConfetti() {
+    confetti({
+      particleCount: 150,
+      spread: 60,
+      origin: { y: 0.6 }
+    });
+  }
+
+  function reset() {
+    message.textContent = "";
+    dateCounter.style.display = "none";
+    coin.style.display = "block";
+  }
+
+  coin.addEventListener('click', () => {
+    if(coin.classList.contains('flip')) return;
+
+    reset();
+    coinSound.currentTime = 0;
+    coinSound.play();
+
+    coin.classList.add('flip');
+
+    setTimeout(() => {
+      result = Math.random() < 0.5 ? 'будний' : 'выходной';
+
+      message.textContent = `Ура, ФАРМА идет в ${result} день!`;
+
+      fireworkSound.currentTime = 0;
+      fireworkSound.play();
+      playConfetti();
+
+      coin.style.display = "none";
+
+      dateCounter.style.display = "inline-block";
+      dateCounter.textContent = "Нажми, чтобы выбрать дату";
+    }, 4000);
+  });
+
+  dateCounter.addEventListener('click', () => {
+    if(!result) return;
+    let date;
+    if(result === 'будний') {
+      date = getRandomFrom(weekdays);
+    } else {
+      date = getRandomFrom(weekends);
+    }
+    dateCounter.textContent = `Дата корпоратива: ${date}`;
+  });
+</script>
+
+</body>
+</html>
